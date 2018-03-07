@@ -36,7 +36,7 @@ pipeline {
         script {
           sh 'echo "Running tests"'
           container.inside("--name='numpy-test'") {
-            s<%  %> 'python -c "import numpy; numpy.test("full");"'
+            sh 'python -c "import numpy; numpy.test("full");"'
           }
         }
       }
