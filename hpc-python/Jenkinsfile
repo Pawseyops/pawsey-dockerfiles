@@ -25,8 +25,7 @@ pipeline {
     stage('Build image') {
       steps {
         script {
-          sh 'cd hpc-python'
-          container = docker.build("pawsey/hpc-python")
+          container = docker.build("pawsey/hpc-python", "./hpc-python")
         }
       }
     }
