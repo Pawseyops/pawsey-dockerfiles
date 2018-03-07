@@ -25,6 +25,7 @@ pipeline {
     stage('Build image') {
       steps {
         script {
+          sh 'cd hpc-python'
           container = docker.build("pawsey/hpc-python")
         }
       }
@@ -60,7 +61,7 @@ pipeline {
   post {
     always {
       script {
-        sh 'echo "docker rmi bskjerven/mwa-docker"'
+        sh 'echo "docker rmi pawsey/hpc-python"'
       }
     }
     failure {
