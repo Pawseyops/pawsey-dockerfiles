@@ -60,24 +60,28 @@ pipeline {
   post {
     always {
       script {
-        sh 'echo "docker rmi pawsey/hpc-python"'
+        sh 'docker rmi pawsey/hpc-python'
       }
     }
     failure {
       emailext (
         subject: "FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
         body: """<p>FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':</p>
-          <p>Check console output at &QUOT;<a href='${env.BUILD_URL}'>${env.JOB_NAME} [${env.BUILD_NUMBER}]</a>&QUOT;</p>""",
-        recipientProviders: [[$class: 'DevelopersRecipientProvider']]
+          <p>Check console output at &QUOT;<a href='${env.BUILD_URL}'>${env.JOB_NAME} [${env.BUILD_NUMBER}]</a>&QUOT;</p>"""
       )
     }
     changed {
       emailext (
-        subject: "SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
-        body: """<p>SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':</p>
-          <p>Check console output at &QUOT;<a href='${env.BUILD_URL}'>${env.JOB_NAME} [${env.BUILD_NUMBER}]</a>&QUOT;</p>""",
-        recipientProviders: [[$class: 'DevelopersRecipientProvider']]
+        subject: "CHANGED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
+        body: """<p>CHANGED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':</p>
+          <p>Check console output at &QUOT;<a href='${env.BUILD_URL}'>${env.JOB_NAME} [${env.BUILD_NUMBER}]</a>&QUOT;</p>"""
       )
     }
+    success {
+      emailext (
+        subject: "SUCCESS: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
+        body: """<p>SUCCESS: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':</p>
+          <p>Check console output at &QUOT;<a href='${env.BUILD_URL}'>${env.JOB_NAME} [${env.BUILD_NUMBER}]</a>&QUOT;</p>"""
+      )
   }
 }
