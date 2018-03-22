@@ -17,7 +17,6 @@ RUN pip install --upgrade pip \
       numpy \
       pytest \
       scipy \
-      setuptools \
-      pandas
+      setuptools
 
 CMD ["/bin/bash"]
