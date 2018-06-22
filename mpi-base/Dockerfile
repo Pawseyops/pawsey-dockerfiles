@@ -2,6 +2,9 @@ FROM ubuntu:latest
 
 LABEL maintainer="brian.skjerven@pawsey.org.au"
 
+RUN perl -p -i.orig -e 's/archive.ubuntu.com/mirror.aarnet.edu.au\/pub\/ubuntu\/archive/' /etc/apt/sources.list \
+  && sed -i '0,/# deb-src/{s/# deb-src/deb-src/}' /etc/apt/sources.list
+
 RUN apt-get update \
       && apt-get install -y autoconf automake gcc g++ make gfortran wget python python-dev \
       && apt-get clean all \
