@@ -2,6 +2,9 @@ FROM ubuntu:latest
 
 LABEL maintainer="brian.skjerven@pawsey.org.au"
 
+RUN perl -p -i.orig -e 's/archive.ubuntu.com/mirror.aarnet.edu.au\/pub\/ubuntu\/archive/' /etc/apt/sources.list \
+  && sed -i '0,/# deb-src/{s/# deb-src/deb-src/}' /etc/apt/sources.list
+
 RUN apt-get update \
       && apt-get install -y autoconf automake gcc g++ make gfortran wget python python-dev \
       && apt-get clean all \
@@ -9,15 +12,15 @@ RUN apt-get update \
 
 ### Build MPICH ###
 
-ARG MPICH_VERSION="3.2"
+ARG MPICH_VERSION="3.1.4"
 ARG MPICH_CONFIGURE_OPTIONS=
 ARG MPICH_MAKE_OPTIONS="-j4"
 
 RUN mkdir /tmp/mpich-build
 WORKDIR /tmp/mpich-build
 
-RUN wget http://www.mpich.org/static/downloads/3.2/mpich-3.2.tar.gz \
-  && tar xvzf mpich-3.2.tar.gz \
+RUN wget http://www.mpich.org/static/downloads/${MPICH_VERSION}/mpich-${MPICH_VERSION}.tar.gz \
+  && tar xvzf mpich-${MPICH_VERSION}.tar.gz \
   && cd mpich-${MPICH_VERSION}  \
   && ./configure ${MPICH_CONFIGURE_OPTIONS} \
   && make ${MPICH_MAKE_OPTIONS} \
