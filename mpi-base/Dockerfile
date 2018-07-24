@@ -1,22 +1,30 @@
-FROM ubuntu:latest
+FROM ubuntu:17.10
 
 LABEL maintainer="brian.skjerven@pawsey.org.au"
 
+# Add aarnet mirror to speed up package update
 RUN perl -p -i.orig -e 's/archive.ubuntu.com/mirror.aarnet.edu.au\/pub\/ubuntu\/archive/' /etc/apt/sources.list \
   && sed -i '0,/# deb-src/{s/# deb-src/deb-src/}' /etc/apt/sources.list
 
+# Install package dependencies
 RUN apt-get update \
-      && apt-get install -y autoconf automake gcc g++ make gfortran wget python python-dev \
+      && apt-get install -y \
+        build-essential \
+        gdb \
+        gfortran \
+        python \
+        python-dev \
+        wget \
       && apt-get clean all \
-      && rm -rf /var/lib/apt/lists/*
+      && rm -r /var/lib/apt/lists/*
+
 
 ### Build MPICH ###
 
 ARG MPICH_VERSION="3.1.4"
-ARG MPICH_CONFIGURE_OPTIONS=
+ARG MPICH_CONFIGURE_OPTIONS="--enable-fast=all,O3 --prefix=/usr"
 ARG MPICH_MAKE_OPTIONS="-j4"
 
-RUN mkdir /tmp/mpich-build
 WORKDIR /tmp/mpich-build
 
 RUN wget http://www.mpich.org/static/downloads/${MPICH_VERSION}/mpich-${MPICH_VERSION}.tar.gz \
@@ -25,20 +33,18 @@ RUN wget http://www.mpich.org/static/downloads/${MPICH_VERSION}/mpich-${MPICH_VE
   && ./configure ${MPICH_CONFIGURE_OPTIONS} \
   && make ${MPICH_MAKE_OPTIONS} \
   && make install \
-  && rm -rf /tmp/mpich-build
+  && ldconfig
 
 # Test MPICH
-RUN mkdir /tmp/mpich-test
 WORKDIR /tmp/mpich-test
 COPY mpich-test .
 RUN sh test.sh
-RUN rm -rf /tmp/mpich-test
+
 
 ### Build MPI4PY ###
 
 ARG MPI4PY_VERSION="3.0.0"
 
-RUN mkdir /tmp/mpi4py-build
 WORKDIR /tmp/mpi4py-build
 
 RUN wget https://bitbucket.org/mpi4py/mpi4py/downloads/mpi4py-3.0.0.tar.gz \
@@ -46,15 +52,15 @@ RUN wget https://bitbucket.org/mpi4py/mpi4py/downloads/mpi4py-3.0.0.tar.gz \
       && cd mpi4py-${MPI4PY_VERSION} \
       && python setup.py build \
       && python setup.py install \
-      && rm -rf /tmp/mpi4py-build
+      && rm -r /tmp/mpi4py-build
+
 
 ### Build OSU Benchmarks ###
 
-ARG OSU_BENCH_VERSION="5.4"
-ARG OSU_BENCH_CONFIGURE_OPTIONS="--prefix=/opt/osu CC=mpicc CXX=mpicxx"
+ARG OSU_BENCH_VERSION="5.4.2"
+ARG OSU_BENCH_CONFIGURE_OPTIONS="--prefix=/usr/local CC=mpicc CXX=mpicxx CFLAGS=-O3"
 ARG OSU_BENCH_MAKE_OPTIONS="-j4"
 
-RUN mkdir -p /tmp/osu-benchmark-build
 WORKDIR /tmp/osu-benchmark-build
 
 RUN wget http://mvapich.cse.ohio-state.edu/download/mvapich/osu-micro-benchmarks-${OSU_BENCH_VERSION}.tar.gz \
@@ -62,16 +68,9 @@ RUN wget http://mvapich.cse.ohio-state.edu/download/mvapich/osu-micro-benchmarks
       && cd osu-micro-benchmarks-${OSU_BENCH_VERSION} \
       && ./configure ${OSU_BENCH_CONFIGURE_OPTIONS} \
       && make ${OSU_BENCH_MAKE_OPTIONS} \
-      && make install \
-      && rm -rf /tmp/osu-benchmark-build
-
-### Add Cray libraries ###
+      && make install
 
 WORKDIR /
-RUN printf "/opt/cray/pe/mpt/7.7.0/gni/mpich-gnu-abi/5.1/lib\n" >> /etc/ld.so.conf \
-    && printf "/opt/cray/pmi/default/lib64\n/opt/cray/ugni/default/lib64\n" >> /etc/ld.so.conf \
-    && printf "/opt/cray/udreg/default/lib64\n/opt/cray/xpmem/default/lib64\n" >> /etc/ld.so.conf \
-    && printf "/opt/cray/alps/default/lib64\n/opt/cray/wlm_detect/default/lib64\n" >> /etc/ld.so.conf \
-    && ldconfig
+RUN rm -rf /tmp/*
 
 CMD ["/bin/bash"]

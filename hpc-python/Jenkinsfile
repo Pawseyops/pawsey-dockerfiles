@@ -71,7 +71,7 @@ pipeline {
         recipientProviders: [[$class: 'RequesterRecipientProvider']]
       )
     }
-    changed {
+    changed 
       emailext (
         subject: "CHANGED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
         body: '''${SCRIPT, template="groovy-html.template"}''',
