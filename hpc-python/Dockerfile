@@ -1,4 +1,4 @@
-FROM ubuntu:latest
+FROM ubuntu:17.10
 
 LABEL maintainer="brian.skjerven@pawsey.org.au"
 
@@ -8,8 +8,7 @@ RUN apt-get update \
       python-minimal \
       python-pip
 
-RUN pip install --upgrade pip \
-      && pip install \
+RUN pip install\
       astropy \
       h5py \
       matplotlib \
