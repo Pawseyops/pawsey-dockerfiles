@@ -3,18 +3,19 @@ FROM ubuntu:17.10
 LABEL maintainer="brian.skjerven@pawsey.org.au"
 
 # Add aarnet mirror to speed up package update
-RUN perl -p -i.orig -e 's/archive.ubuntu.com/mirror.aarnet.edu.au\/pub\/ubuntu\/archive/' /etc/apt/sources.list \
-  && sed -i '0,/# deb-src/{s/# deb-src/deb-src/}' /etc/apt/sources.list
+RUN perl -p -i.orig -e \
+      's/archive.ubuntu.com/mirror.aarnet.edu.au\/pub\/ubuntu\/archive/' /etc/apt/sources.list \
+      && sed -i '0,/# deb-src/{s/# deb-src/deb-src/}' /etc/apt/sources.list
 
 # Install package dependencies
 RUN apt-get update \
       && apt-get install -y \
-        build-essential \
-        gdb \
-        gfortran \
-        python \
-        python-dev \
-        wget \
+         build-essential \
+         gdb \
+         gfortran \
+         python-minimal \
+         python-dev \
+         wget \
       && apt-get clean all \
       && rm -r /var/lib/apt/lists/*
 
@@ -28,12 +29,12 @@ ARG MPICH_MAKE_OPTIONS="-j4"
 WORKDIR /tmp/mpich-build
 
 RUN wget http://www.mpich.org/static/downloads/${MPICH_VERSION}/mpich-${MPICH_VERSION}.tar.gz \
-  && tar xvzf mpich-${MPICH_VERSION}.tar.gz \
-  && cd mpich-${MPICH_VERSION}  \
-  && ./configure ${MPICH_CONFIGURE_OPTIONS} \
-  && make ${MPICH_MAKE_OPTIONS} \
-  && make install \
-  && ldconfig
+      && tar xvzf mpich-${MPICH_VERSION}.tar.gz \
+      && cd mpich-${MPICH_VERSION}  \
+      && ./configure ${MPICH_CONFIGURE_OPTIONS} \
+      && make ${MPICH_MAKE_OPTIONS} \
+      && make install \
+      && ldconfig
 
 # Test MPICH
 WORKDIR /tmp/mpich-test
